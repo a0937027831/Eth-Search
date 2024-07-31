@@ -5,7 +5,15 @@
       <v-card-title class="headline">以太坊搜尋工具</v-card-title>
       <v-card-text>
         <v-form ref="form">
-          <XInput v-model="queryInput" label="輸入錢包地址或交易哈希" variant="underlined" outlined required></XInput>
+          <XInput 
+            v-model="queryInput"
+            label="輸入錢包地址或交易哈希" 
+            variant="underlined"
+            :rules="inputRules" 
+            outlined 
+            required
+          >
+          </XInput>
           <v-btn @click="navigator" color="primary">搜尋</v-btn>
         </v-form>
       </v-card-text>
@@ -49,6 +57,9 @@ watch(() => queryInput.value, (newValue) => {
 }, { immediate: true });
 
 
+// rules
+const inputRules = [v => queryType.value != 'invalid' || '請輸入錢包地址或交易哈希'] 
+
 // validate
 const form = ref()
 
@@ -67,7 +78,7 @@ const tipDialog = reactive({
 
 //navigator
 async function navigator() {
-  let check = await validate()
+  let check = await validate();
   if (!check){
     tipDialog.open = true;
     return;
