@@ -12,7 +12,7 @@
 - Etherscan API
 
 ## 文件結構
-‵‵‵ bash
+```
 |-- undefined
     |-- .env.development
     |-- .env.production
