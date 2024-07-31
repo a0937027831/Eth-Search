@@ -12,42 +12,58 @@
 - Etherscan API
 
 ## 文件結構
-\```
-src/
-├── api/
-│ ├── ethersApi.js
-├── assets/
-├── components/
-│ ├── form/
-│ │ ├── input.vue
-│ ├── modal/
-│ │ ├── dialog.vue
-│ │ ├── loading.vue
-│ ├── navbar/
-│ │ ├── navbar.vue
-│ ├── table/
-│ ├── table.vue
-├── composables/
-│ ├── useFlow.js
-├── define/
-│ ├── define-global-component.js
-├── layout/
-│ ├── base-layout.vue
-├── plugins/
-│ ├── vuetify.js
-├── router/
-│ ├── index.js
-├── stores/
-│ ├── loading.js
-├── utils/
-│ ├── eth-utils.js
-│ ├── interceptors.js
-│ ├── request.js
-├── views/
-│ ├── account.vue
-│ ├── home.vue
-│ ├── transaction.vue
-\```
+|-- undefined
+    |-- .env.development
+    |-- .env.production
+    |-- .gitignore
+    |-- index.html
+    |-- jsconfig.json
+    |-- package-lock.json
+    |-- package.json
+    |-- README.md
+    |-- vite.config.js
+    |-- .vscode
+    |   |-- extensions.json
+    |   |-- settings.json
+    |-- public
+    |   |-- favicon.ico
+    |-- src
+        |-- App.vue
+        |-- main.js
+        |-- api
+        |   |-- ethersApi.js
+        |-- assets
+        |-- components
+        |   |-- form
+        |   |   |-- input.vue
+        |   |-- modal
+        |   |   |-- dialog.vue
+        |   |   |-- loading.vue
+        |   |-- navbar
+        |   |   |-- navbar.vue
+        |   |-- table
+        |       |-- table.vue
+        |-- composables
+        |   |-- useFlow.js
+        |-- define
+        |   |-- define-global-component.js
+        |-- layout
+        |   |-- base-layout.vue
+        |-- plugins
+        |   |-- vuetify.js
+        |-- router
+        |   |-- index.js
+        |-- stores
+        |   |-- loading.js
+        |-- utils
+        |   |-- eth-utils.js
+        |   |-- interceptors.js
+        |   |-- request.js
+        |-- views
+            |-- account.vue
+            |-- home.vue
+            |-- transaction.vue
+
 
 ### `api/ethersApi.js`
 這個文件包含與 Etherscan API 互動的函數，通過 Axios 發送 HTTP 請求來獲取帳戶餘額、普通交易列表和內部交易列表。
