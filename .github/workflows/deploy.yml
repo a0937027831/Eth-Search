@@ -1,31 +1,32 @@
-# Action 名稱
 name: Deploy to GitHub Pages
-# 觸發時機，當推送到分支 master 時
+
 on:
   push:
-    branches: [ main ]
-# 執行的工作
+    branches:
+      - main
+
 jobs:
-  # 工作名稱
-  deploy:
-    # 執行工作的虛擬機作業系統
+  build:
     runs-on: ubuntu-latest
-    # 工作步驟
     steps:
-      # 步驟一：複製程式碼
-      - name: checkout
-        # 使用的 actions/checkout 複製程式碼
+      - name: Checkout repository
         uses: actions/checkout@v3
-      # 步驟二：編譯
-      - name: Install and Build
-        run: |
-          npm install
-          npm run build
-        env:
-          VITE_API: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-      # 步驟三：部署
-      - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
-          branch: gh-pages
-          folder: dist
+          node-version: 16
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build project
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          npm run deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACTIONS_DEPLOY_KEY }}
