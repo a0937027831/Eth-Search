@@ -21,6 +21,9 @@ jobs:
         run: npm install
 
       - name: Build project
+        env:
+          VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
+          VITE_ETHERSCAN_API_KEY: ${{ secrets.VITE_ETHERSCAN_API_KEY }}
         run: npm run build
 
       - name: Deploy to GitHub Pages
