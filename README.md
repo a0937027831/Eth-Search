@@ -12,52 +12,40 @@
 - Etherscan API
 
 ## 文件結構
-+---api //api 存放區
-|       ethersApi.js
-|       
-+---assets
-+---components  //基本組件封裝
-|   +---form
-|   |       input.vue
-|   |       
-|   +---modal
-|   |       dialog.vue
-|   |       loading.vue
-|   |       
-|   +---navbar
-|   |       navbar.vue
-|   |       
-|   \---table
-|           table.vue
-|           
-+---composables
-|       useFlow.js
-|       
-+---define  //引入全局組件
-|       define-global-component.js
-|       
-+---layout
-|       base-layout.vue
-|       
-+---plugins
-|       vuetify.js
-|       
-+---router
-|       index.js
-|       
-+---stores
-|       loading.js
-|       
-+---utils  //工具
-|       eth-utils.js
-|       interceptors.js
-|       request.js
-|       
-\---views
-        account.vue
-        home.vue
-        transaction.vue
-
+src/
+├── api/
+│ ├── ethersApi.js
+├── assets/
+├── components/
+│ ├── form/
+│ │ ├── input.vue
+│ ├── modal/
+│ │ ├── dialog.vue
+│ │ ├── loading.vue
+│ ├── navbar/
+│ │ ├── navbar.vue
+│ ├── table/
+│ ├── table.vue
+├── composables/
+│ ├── useFlow.js
+├── define/
+│ ├── define-global-component.js
+├── layout/
+│ ├── base-layout.vue
+├── plugins/
+│ ├── vuetify.js
+├── router/
+│ ├── index.js
+├── stores/
+│ ├── loading.js
+├── utils/
+│ ├── eth-utils.js
+│ ├── interceptors.js
+│ ├── request.js
+├── views/
+│ ├── account.vue
+│ ├── home.vue
+│ ├── transaction.vue
 
 
 ### `api/ethersApi.js`
