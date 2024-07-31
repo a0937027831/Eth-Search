@@ -3,6 +3,9 @@
 ## 簡介
 這個專案是一個基於 Vue 3 和 Vite 的應用，使用 Etherscan API 獲取以太坊帳戶和交易相關資訊。主要功能包括查詢帳戶餘額、普通交易和內部交易詳情。
 
+##線上環境連結
+https://a0937027831.github.io/Eth-Search/
+
 ## 技術棧
 - Vue 3
 - Vite
