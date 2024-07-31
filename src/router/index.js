@@ -2,10 +2,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/home.vue'
 import AccountView from '@/views/account.vue'
 import TransactionView from '@/views/transaction.vue'
+import NotFoundView from '@/views/notFound.vue'
 
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
@@ -22,6 +23,11 @@ const router = createRouter({
       name: 'transaction',
       component: TransactionView
     },
+    { 
+      path: '/:pathMatch(.*)', 
+      name: 'notFound',
+      component: NotFoundView 
+    }
   ]
 })
 
