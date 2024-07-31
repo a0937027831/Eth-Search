@@ -3,7 +3,8 @@
     v-bind="$attrs" 
     v-model="computedValue" 
     :label="label" 
-    :rules="rules" 
+    :rules="rules"
+    validate-on="blur"
   />
 </template>
 
