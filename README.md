@@ -12,6 +12,7 @@
 - Etherscan API
 
 ## 文件結構
+‵‵‵ bash
 |-- undefined
     |-- .env.development
     |-- .env.production
@@ -63,7 +64,7 @@
             |-- account.vue
             |-- home.vue
             |-- transaction.vue
-
+```
 
 ### `api/ethersApi.js`
 這個文件包含與 Etherscan API 互動的函數，通過 Axios 發送 HTTP 請求來獲取帳戶餘額、普通交易列表和內部交易列表。
