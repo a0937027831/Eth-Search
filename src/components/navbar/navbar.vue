@@ -22,6 +22,7 @@ const items = [
   { title: 'home', to: '/' },
   { title: 'account', to: '/account' },
   { title: 'transaction', to: '/transaction' },
+  { title: 'tableTest', to: '/tableTest' },
 ]
 
 const drawer = ref(false)

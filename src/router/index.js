@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/home.vue'
 import AccountView from '@/views/account.vue'
 import TransactionView from '@/views/transaction.vue'
+import TableTestView from '@/views/tableTest.vue'
 import NotFoundView from '@/views/notFound.vue'
 
 
@@ -22,6 +23,11 @@ const router = createRouter({
       path: '/transaction/:searchValue?',
       name: 'transaction',
       component: TransactionView
+    },
+    {
+      path: '/tableTest',
+      name: 'tableTest',
+      component: TableTestView
     },
     { 
       path: '/:pathMatch(.*)', 
