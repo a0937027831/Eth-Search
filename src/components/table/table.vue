@@ -12,14 +12,15 @@
     items-per-page="-1"
   >
   <template v-for="(_, scopedSlotName) in $slots" v-slot:[scopedSlotName]="slotData">
-      <slot :name="scopedSlotName" v-bind="slotData" />
-   </template>
+    <slot :name="scopedSlotName" v-bind="slotData" />
+  </template>
   </v-data-table>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, nextTick, getCurrentInstance } from 'vue';
 import { simpleAwait } from '@/utils/simple-await.js';
+import * as _ from 'lodash'
 
 const props = defineProps({
   headers: Array,
@@ -43,10 +44,6 @@ const props = defineProps({
     default: false,
   },
 });
-
-// lodash
-const instance = getCurrentInstance();
-const _ = instance.appContext.config.globalProperties._;
 
 // emit
 const emit = defineEmits(['dataLoaded']);

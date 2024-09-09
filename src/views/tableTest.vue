@@ -1,5 +1,5 @@
 <template>
-  <XTable
+  <!-- <XTable
     v-model="selected"
     :headers="headers"
     :items="items"
@@ -10,10 +10,41 @@
     useAutoSearch
     show-select
   >
-  </XTable>
+  </XTable> -->
+
+  <!-- <v-btn @click="openDialog">Open Dialog</v-btn> -->
+
+  <!-- popup -->
+  <!-- <XDialog
+    v-if="dialog"
+    v-model="dialog"
+    confirmButtonText="confirm"
+  />
+   -->
+
+<XButton
+  append-icon="mdi-account-circle"
+  prepend-icon="mdi-check-circle"
+>
+  <template #prepend><p>123</p></template>
+  456
+  <template #append><p>789</p></template>
+</XButton>
+
+<!-- <XButton 
+  v-model:loading="loading"
+  :debounceTime="1000"
+  debounce
+  @click="(e)=>{console.log('test')}"
+>
+  <template v-slot:default>123</template>
+</XButton> -->
 </template>
 <script setup>
 import { reactive, ref } from 'vue';
+
+
+const loading = ref(false);
 
 const headers = ref([
   { title: 'ID', key: 'id' },
@@ -51,6 +82,13 @@ function dataLoaded(data){
   items.value = [...items.value, ...data];
   pageObject.page += 1;
   pageObject.totalPages += 1;
+}
+
+
+// open dialog
+const dialog = ref(false);
+function openDialog(){
+  dialog.value = true;
 }
 
 

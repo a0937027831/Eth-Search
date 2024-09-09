@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch ,onMounted} from 'vue'
 import { useRouter } from 'vue-router'
 
 const queryInput = ref('');
@@ -56,6 +56,7 @@ watch(() => queryInput.value, (newValue) => {
   }
 }, { immediate: true });
 
+console.log( import.meta.env.VITE_BASE_URL)
 
 // rules
 const inputRules = [v => queryType.value != 'invalid' || '請輸入錢包地址或交易哈希'] 

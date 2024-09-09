@@ -4,6 +4,7 @@ import AccountView from '@/views/account.vue'
 import TransactionView from '@/views/transaction.vue'
 import TableTestView from '@/views/tableTest.vue'
 import NotFoundView from '@/views/notFound.vue'
+import visNetworkView from '@/views/visNetworkView.vue'
 
 
 const router = createRouter({
@@ -33,6 +34,11 @@ const router = createRouter({
       path: '/:pathMatch(.*)', 
       name: 'notFound',
       component: NotFoundView 
+    },
+    { 
+      path: '/visNetworkView', 
+      name: 'visNetworkView',
+      component: visNetworkView 
     }
   ]
 })
