@@ -23,12 +23,9 @@
    -->
 
 <XButton
-  append-icon="mdi-account-circle"
-  prepend-icon="mdi-check-circle"
+  @click="onClick"
 >
-  <template #prepend><p>123</p></template>
-  456
-  <template #append><p>789</p></template>
+  123
 </XButton>
 
 <!-- <XButton 
@@ -43,8 +40,13 @@
 <script setup>
 import { reactive, ref } from 'vue';
 
+function onClick(){
+  console.log('click')
+}
+
 
 const loading = ref(false);
+
 
 const headers = ref([
   { title: 'ID', key: 'id' },

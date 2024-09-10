@@ -5,7 +5,7 @@
     :loading="loading" 
     :disabled="props.disabled"
     :rounded="props.rounded"
-    @click="onClick"
+    @click="onClick($event)"
   >
     <template v-for="(_, slotName) in $slots" #[slotName]="slotProps">
       <template v-if="$slots[slotName]">
@@ -21,33 +21,40 @@
 
 
 <script setup lang="ts">
-import { IBaseButtonProps, baseButtonDefaultProps } from './useButton';
-import { useVModel } from '@/composables/useVModel'
-
 defineOptions({
   inheritAttrs: false
 })
 
-interface Props extends IBaseButtonProps{
+interface IBaseButtonProps {
+  show?: boolean;
+  disabled?: boolean;
+  rounded?: string;
   debounce?: boolean,
   debounceTime?: number,
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  ...baseButtonDefaultProps,  // 展開默認 props
+
+const props = withDefaults(defineProps<IBaseButtonProps>(), {
+  show: true,
+  disabled: false,
+  rounded: 'lg',
   debounce: false,
   debounceTime: 0,
 });
 
-const emit = defineEmits();
-const loading = useVModel(props, emit, 'loading'); // 使用 v-model 处理 loading
+const emit = defineEmits(['click']);
+
+const loading = defineModel('loading', {
+  type: Boolean,
+  default: false
+});
 
 function onClick(e){
   if(props.disabled || loading.value) return
   
   if(props.debounce && !loading.value){
     loading.value = true;
-    props.click(e);
+    emit('click',e);
     setTimeout(()=>{
       loading.value = false;
     },props.debounceTime);
@@ -55,7 +62,7 @@ function onClick(e){
   }
 
   if(!props.debounce){
-    props.click(e);
+    emit('click',e);
     return
   }
 
