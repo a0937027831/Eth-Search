@@ -1,5 +1,5 @@
 <template>
-  <XTable
+  <XSearchTable
     v-model="selected"
     :headers="headers"
     :items="items"
@@ -10,11 +10,18 @@
     useAutoSearch
     show-select
   >
-  </XTable>
+  </XSearchTable>
+  <XInput
+    v-model="inp"
+    clear-icon="mdi-close-circle"
+    clearable
+    @click:clear="clearMessage"
+  ></XInput>
+  <v-checkbox></v-checkbox>
 </template>
 <script setup>
 import { reactive, ref } from 'vue';
-
+const inp = ref('')
 const headers = ref([
   { title: 'ID', key: 'id' },
   { title: 'Name', key: 'name' },
@@ -37,6 +44,10 @@ const items = ref([
 ]);
 
 const selected = ref([])
+
+function clearMessage () {
+  
+}
 
 const pageObject = reactive({
   page: 0,
