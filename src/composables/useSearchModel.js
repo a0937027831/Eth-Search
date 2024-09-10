@@ -1,6 +1,5 @@
 import { ref, watch, onMounted, nextTick } from 'vue';
 import { simpleAwait } from '@/util/simple-await.js';
-import { createScrollHandler } from '@/util/common';
 
 export function useSearchModal(pageInfo, apiFunc, setData, domRef, isMountedGetData=true) {
   
@@ -40,6 +39,17 @@ export function useSearchModal(pageInfo, apiFunc, setData, domRef, isMountedGetD
 
 	// 使用防抖處理的滾動事件處理器
 	const onScroll = createScrollHandler(getMoreData);
+
+  
+  const createScrollHandler = (callback) => {
+    const debouncedCallback = debounce(callback, 1000);
+    return (event) => {
+      const { scrollTop, clientHeight, scrollHeight } = event.target;
+      if (scrollTop + clientHeight >= scrollHeight - 1) {
+        debouncedCallback()
+      }
+    };
+  }
 
 	function addScrollListener(){		
 		nextTick(() => {
