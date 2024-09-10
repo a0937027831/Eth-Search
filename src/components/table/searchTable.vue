@@ -1,6 +1,6 @@
 <template>
   <XTable
-    ref="dataTable"
+    ref="searchDom"
     v-bind="$attrs"
     :headers="headers"
     :items="items"
@@ -10,6 +10,9 @@
     items-per-page="-1"
     height="400px"
   >
+    <template #loading>
+      <!-- <LoadingSpinner :loading="loading" /> -->
+    </template>
     <template v-for="(_, scopedSlotName) in $slots" v-slot:[scopedSlotName]="slotData">
       <slot :name="scopedSlotName" v-bind="slotData" />
     </template>
@@ -17,8 +20,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, getCurrentInstance } from 'vue';
-import { simpleAwait } from '@/utils/simple-await.js';
+import { ref, onMounted, nextTick } from 'vue';
+// import LoadingSpinner from "@/components/LoadingSpinner.vue";
+import { useSearchModal } from '@/composables/useSearchModel.js'
 
 const props = defineProps({
   headers: Array,
@@ -26,85 +30,38 @@ const props = defineProps({
   apiFunc: {
     type: Function,
   },
-  pageObject: {
+  pageInfo: {
     type: Object,
     default: () => ({
       page: 0,
-      totalPages: 0,
+      totalPage: 0,
+      pageSize: 0,
+      time: 1
     })
   },
-  totalPages: {
-    type: Number,
-    default: 0,
-  },
-  useAutoSearch: {
-    type: Boolean,
-    default: false,
-  },
 });
-
-// lodash
-const instance = getCurrentInstance();
-const _ = instance.appContext.config.globalProperties._;
 
 // emit
-const emit = defineEmits(['dataLoaded']);
+const emit = defineEmits(['setData']);
+const setData = ((response)=>{
+  emit('setData',response)
+})
 
-// loading
-const loading = ref(false);
+// search dom
+const searchDom = ref();
+const searchDomListener = ref();
 
-// table dom
-const dataTable = ref(null);
-
-
-const loadMoreItems = async () => {
-  if (loading.value || props.pageObject.page > props.pageObject.totalPages) return;
-  loading.value = true;
-
-  // 使用 simpleAwait 來處理 API 調用
-  const [error, newItems] = await simpleAwait(props.apiFunc(props.pageObject), 
-    () => { loading.value = false; }
-  );
-
-  if (error) {
-    console.error('Error loading data:', error);
-    return;
-  }
-
-  emit('dataLoaded', newItems);
-};
-
-// 創建滾動事件處理器，並將回調函數進行防抖處理
-const createScrollHandler = (callback) => {
-  const debouncedCallback = _.debounce(callback, 200);
-  return (event) => {
-    const { scrollTop, clientHeight, scrollHeight } = event.target;
-    if (scrollTop + clientHeight >= scrollHeight - 1) {
-      console.log("botton");
-      debouncedCallback();
-    }
-  };
-};
-
-// 使用防抖處理的滾動事件處理器
-const onScroll = createScrollHandler(loadMoreItems);
-
-function addScrollListener(){
-  if(!props.useAutoSearch) return;
-  
-  nextTick(() => {
-    const tableWrapper = dataTable.value.$el.querySelector('.v-table__wrapper');
-    if (tableWrapper) {
-      tableWrapper.addEventListener('scroll', onScroll);
-    } else {
-      console.error('Table wrapper not found');
-    }
-  });
+async function getListenerDom(){
+   await nextTick();
+   return searchDom.value.$el.querySelector('.v-table__wrapper');
 }
 
-onMounted(() => {
-  addScrollListener();
+const { loading } = useSearchModal(props.pageInfo, props.apiFunc ,setData, searchDomListener)
+
+onMounted( async () => {
+  searchDomListener.value = await getListenerDom();
 });
+
 
 
 </script>
