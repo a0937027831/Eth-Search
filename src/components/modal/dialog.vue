@@ -1,5 +1,9 @@
 <template>
-  <v-dialog v-model="modelValue" :max-width="maxWidth" persistent>
+  <v-dialog 
+    v-model="modelValue" 
+    :max-width="maxWidth" 
+    persistent
+  >
     <v-card>
       <v-card-title>
         <span class="headline">{{ title }}</span>
@@ -18,7 +22,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
   title: {
@@ -58,6 +62,12 @@ const handleConfirm = () => {
   emit('confirm');
   modelValue.value = false;
 };
+
+
+onMounted(()=>{
+  console.log('dialog onMounted')
+})
+
 </script>
 
 <style scoped>
