@@ -1,5 +1,5 @@
 import { ref, watch, onMounted, nextTick } from 'vue';
-import { simpleAwait } from '@/util/simple-await.js';
+import { simpleAwait } from '@/utils/simple-await.js';
 
 export function useSearchModal(pageInfo, apiFunc, setData, domRef, isMountedGetData=true) {
   
