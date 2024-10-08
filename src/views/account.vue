@@ -39,6 +39,10 @@
     </div>
   </div>
 
+  <v-btn @click="getTestAPI">call api</v-btn>
+  <v-btn @click="cancelAPI">cancel API</v-btn>
+
+
   <!-- popup -->
   <XDialog 
     v-model="tipDialog.open" 
@@ -49,7 +53,7 @@
 </template>
 
 <script setup>
-import { onBeforeMount, reactive } from "vue";
+import { onBeforeMount, onMounted, reactive,ref } from "vue";
 import { useRoute } from "vue-router";
 import { weiToEther } from "@/utils/eth-utils";
 import {
@@ -117,6 +121,17 @@ const tipDialog = reactive({
 
 // flow go
 const { executeFlow } = useFlow({ loadingStore, tipDialog });
+const abortAccountApi = ref(null);
+
+async function getTestAPI(){
+  abortAccountApi.value = new AbortController()
+  getAccountBalance({ address: '0x4838B106FCe9647Bdf1E7877BF73cE8B0BAD5f97', tag: 'latest' })
+  console.log('abortAccountApi.signal',abortAccountApi.value.abort)
+}
+
+function cancelAPI(){
+  abortAccountApi.value.abort();
+}
 
 async function getAccountInfo() {
   await executeFlow({
@@ -162,7 +177,7 @@ async function getAccountInfo() {
   });
 }
 
-onBeforeMount(() => {
+onMounted(() => {
   getAccountInfo();
 });
 

@@ -27,6 +27,11 @@
 >
   123
 </XButton>
+<XButton
+  @click="onClick"
+  icon="mdi-arrow-left"
+>
+</XButton>
 
 <!-- <XButton 
   v-model:loading="loading"

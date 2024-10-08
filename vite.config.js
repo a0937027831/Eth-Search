@@ -18,5 +18,8 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },
+  server: {
+    port: 3001, // 修改為你想要的埠號，例如 3001
+  },
   base: '/Eth-Search/',
 })

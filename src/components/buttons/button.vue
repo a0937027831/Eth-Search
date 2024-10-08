@@ -21,9 +21,11 @@
 
 
 <script setup lang="ts">
-defineOptions({
-  inheritAttrs: false
-})
+// defineOptions({
+//   inheritAttrs: false
+// })
+
+
 
 interface IBaseButtonProps {
   show?: boolean;

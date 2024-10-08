@@ -8,13 +8,13 @@ const service = axios.create({
 
 
 const request = {
-  get(url, data) {
-    return service.get(url, { params: data })
+  get(url, data ,signal=null) {
+    return service.get(url, { params: data, signal: signal })
       .then(response => response)
       .catch(error => ({ error: error.message }));
   },
-  post(url, data) {
-    return service.post(url, data)
+  post(url, data, signal) {
+    return service.post(url, data, signal)
       .then(response => response)
       .catch(error => ({ error: error.message }));
   },

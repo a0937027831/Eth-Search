@@ -8,13 +8,13 @@ const apiKey = import.meta.env.VITE_ETHERSCAN_API_KEY;
  * @param {Object} params - 請求參數
  * @returns {Promise} - 返回請求結果
  */
-export function getAccountBalance(parms) {
+export function getAccountBalance(parms,signal) {
   return request.get('', {
     ...parms,
     module: 'account',
     action: "balance",
     apiKey: apiKey
-  });
+  },signal);
 }
 
 
@@ -23,13 +23,13 @@ export function getAccountBalance(parms) {
  * @param {Object} params - 請求參數
  * @returns {Promise} - 返回請求結果
  */
-export function getNormalTransactionsByAdress(parms){
+export function getNormalTransactionsByAdress(parms, signal){
   return request.get('', {
     ...parms,
     module: 'account',
     action: "txlist",
     apiKey: apiKey
-  });
+  },signal);
 }
 
 
