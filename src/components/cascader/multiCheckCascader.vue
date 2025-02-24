@@ -52,7 +52,7 @@
 <script setup lang="ts">
 // ------------------- import -------------------
 import { ref, computed, watch, onMounted } from 'vue'
-import { useTreeCheck, TreeNode } from '@/composables/useTreeCheck'
+import { useTreeCheckRecursive, TreeNode } from '@/composables/useTreeCheck'
 import { IndeterminateDirective } from '@/utils/v-indeterminate'
 
 // ------------------- defineModel -------------------
@@ -112,7 +112,7 @@ const {
   buildMaps,
   toggleCheck,
   rebuildAllStates
-} = useTreeCheck()
+} = useTreeCheckRecursive()
 
 /**
  * 同步到父層的 v-model => 這裡因為用了 defineModel，所以直接改寫 model 即可
