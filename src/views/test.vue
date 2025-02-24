@@ -13,7 +13,7 @@
       placeholder="選擇多層項目"
       multiple
     />
-    <p>目前已選：{{ selectedValues }}</p>
+    <p>目前已選：{{ selectedValues2 }}</p>
   </div>
 </template>
 

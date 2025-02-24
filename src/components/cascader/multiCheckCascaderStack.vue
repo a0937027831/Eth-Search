@@ -50,10 +50,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useTreeCheckIterative, TreeNode } from '@/composables/useTreeCheckIterative'
 import { IndeterminateDirective } from '@/utils/v-indeterminate'
 
+// ------------------- defineModel -------------------
+/**
+
+ *   - 只支援單一 v-model
+ *   - 預設使用 `v-model="model"` 時，父層就能同步拿到 `model` 的變化
+ */
+ const model = defineModel<(string | number)[]>({
+  // 預設值
+  default: () => []
+})
 
 
 // ------------------- directives -------------------
@@ -110,9 +120,36 @@ const {
   rebuildAllStates
 } = useTreeCheckIterative()
 
+/**
+ * 同步到父層的 v-model => 這裡因為用了 defineModel，所以直接改寫 model 即可
+ * 父層會自動接收到變化
+ */
+ function syncToParent() {
+  // 將目前 checkedValues 轉成 Array，賦值給 model
+  model.value = Array.from(checkedValues.value)
+}
+
+
+// ------------------- 監聽 defineModel 的變動 -------------------
+/**
+ * 父層若改變 v-model 的值 (model.value)，這裡會收到通知
+ *  => 我們要根據新的 model.value 重建父子聯動狀態
+ */
+ watch(
+  () => model.value,
+  (newVal) => {
+    checkedValues.value = new Set(newVal)
+    rebuildAllStates()
+  },
+  { immediate: true }
+)
+
 // 建立樹狀資料的快取（nodeMap 與 parentMap）
 onMounted(() => {
   buildMaps(cascaderOptions)
+  // 初始：根據 model.value (父層給的預設選擇)，重建父子聯動
+  checkedValues.value = new Set(model.value)
+  rebuildAllStates()
 })
 
 /**
@@ -210,6 +247,7 @@ const columns = computed(() => {
 function onCheckChange(e: Event, option: TreeNode) {
   const isChecked = (e.target as HTMLInputElement).checked
   toggleCheck(option.value, isChecked)
+  syncToParent()
 }
 
 // 當滑鼠移入某一選項時更新 expandedPath 以展開下一層面板

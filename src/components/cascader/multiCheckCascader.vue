@@ -57,7 +57,6 @@ import { IndeterminateDirective } from '@/utils/v-indeterminate'
 
 // ------------------- defineModel -------------------
 /**
-
  *   - 只支援單一 v-model
  *   - 預設使用 `v-model="model"` 時，父層就能同步拿到 `model` 的變化
  */
