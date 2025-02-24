@@ -4,6 +4,7 @@ import XSearchTable from '@/components/table/searchTable.vue'
 import XDialog from '@/components/modal/dialog.vue'
 import XButton from '@/components/buttons/button.vue'
 import multiCheckCascader from '@/components/cascader/multiCheckCascader.vue'
+import multiCheckCascaderStack from '@/components/cascader/multiCheckCascaderStack.vue'
 
 export function registerGlobalComponents(app) {
   app.component('XInput', XInput);
@@ -12,4 +13,5 @@ export function registerGlobalComponents(app) {
   app.component('XDialog', XDialog);
   app.component('XButton', XButton);
   app.component('XMultiCheckCascader', multiCheckCascader);
+  app.component('XMultiCheckCascaderStack', multiCheckCascaderStack);
 }

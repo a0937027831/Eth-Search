@@ -1,46 +1,47 @@
 <template>
   <div class="multi-check-cascader">
-    <!-- 選擇框 (顯示已勾選數量或其他資訊) -->
+    <!-- 顯示選擇結果，點擊可展開下拉面板 -->
     <div class="cascader-selection" @click="toggleDropdown">
       <span v-if="checkedValues.size === 0">{{ placeholder }}</span>
       <span v-else>已選 {{ checkedValues.size }} 項</span>
     </div>
 
-    <!-- 下拉面板 -->
+    <!-- 下拉面板：包含搜尋框及多欄選項 -->
     <div class="cascader-dropdown" v-if="isOpen">
       <!-- 搜尋框 -->
       <div class="cascader-search">
         <input
           v-model="searchText"
-          class="search-input"
           type="text"
           placeholder="搜尋..."
+          class="search-input"
         />
       </div>
 
-      <!-- 多欄顯示每一層 -->
+      <!-- 多欄面板：根據 expandedPath 動態產生每一層選項 -->
       <div class="cascader-panels">
         <div
           v-for="(levelOptions, levelIndex) in columns"
           :key="levelIndex"
           class="cascader-panel"
         >
-          <div> levelIndex : {{ levelIndex }}</div>
+          <div class="panel-title">層級 {{ levelIndex }}</div>
           <div
             v-for="(option, index) in levelOptions"
             :key="option.value"
             class="cascader-option"
             @mouseenter="handleMouseEnter(option, levelIndex)"
           >
-            <div>index : {{ index }}</div>
-            <!-- 多選 checkbox -->
+            <div class="option-index">選項 {{ index }}</div>
+            <!-- 多選 checkbox：透過 v-indeterminate 指令設定半選狀態 -->
             <input
               type="checkbox"
               :checked="checkedValues.has(option.value)"
               @change="onCheckChange($event, option)"
               v-indeterminate="indeterminateValues.has(option.value)"
             />
-            {{ option.label }}
+            <span class="option-label">{{ option.label }}</span>
+            <!-- 若有子節點，顯示箭頭 -->
             <span v-if="option.children && option.children.length"> &gt; </span>
           </div>
         </div>
@@ -50,35 +51,9 @@
 </template>
 
 <script setup lang="ts">
-// ------------------- import -------------------
-import { ref, computed, watch, onMounted, PropType } from 'vue'
-import { useTreeCheckRecursive, TreeNode } from '@/composables/useTreeCheck'
+import { ref, computed, onMounted } from 'vue'
+import { useTreeCheckIterative, TreeNode } from '@/composables/useTreeCheckIterative'
 import { IndeterminateDirective } from '@/utils/v-indeterminate'
-
-// ------------------- defineModel -------------------
-/**
- * Vue 3.3+ 新的 defineModel API：
- *   - 只支援單一 v-model
- *   - 預設使用 `v-model="model"` 時，父層就能同步拿到 `model` 的變化
- */
-const model = defineModel<(string | number)[]>({
-  // 預設值
-  default: () => []
-})
-
-// ------------------- 其他 props -------------------
-/**
- * 如果還有其他 props (非 v-model) 需要傳進來，
- * 可以再用 defineProps 聲明；或把它們也寫在 defineModel 的第二個參數
- * 但目前 defineModel 只建議用於聲明一個主要 v-model
- */
-
-const props = defineProps({
-  placeholder: { type: String, default: '請選擇' },
-  options: { type: Array as PropType<TreeNode[]>, default: () => [] }
-})
-
-const { placeholder, options } = props;
 
 // ------------------- directives -------------------
 /**
@@ -90,83 +65,65 @@ const { placeholder, options } = props;
     indeterminate: IndeterminateDirective
   }
 })
+// 假設這裡的 options 為傳入的樹狀資料
+const cascaderOptions: TreeNode[] = [
+  {
+    value: 'A',
+    label: '全部',
+    children: [
+      {
+        value: 'B',
+        label: 'B 選項',
+        children: [
+          { value: 'D', label: 'D 選項' },
+          { value: 'E', label: 'E 選項' }
+        ]
+      },
+      {
+        value: 'C',
+        label: 'C 選項',
+        children: [
+          { value: 'F', label: 'F 選項' }
+        ]
+      }
+    ]
+  }
+]
 
-// ------------------- 下拉開關 -------------------
+// placeholder 文案
+const placeholder = '請選擇'
+
+// 控制下拉面板是否展開
 const isOpen = ref(false)
 function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
 
-// ------------------- 搜尋關鍵字 -------------------
+// 搜尋文字
 const searchText = ref('')
 
-// ------------------- 展開路徑 (用於多欄顯示) -------------------
+// 展開路徑：用來記錄各層當前選擇，決定右側多欄的顯示
 const expandedPath = ref<(string | number)[]>([])
 
-// ------------------- 父子聯動 Composable -------------------
+// 使用 iterative 版本的父子聯動邏輯
 const {
   checkedValues,
   indeterminateValues,
-  nodeMap,
-  parentMap,
   buildMaps,
   toggleCheck,
   rebuildAllStates
-} = useTreeCheckRecursive()
+} = useTreeCheckIterative()
 
-/**
- * 同步到父層的 v-model => 這裡因為用了 defineModel，所以直接改寫 model 即可
- * 父層會自動接收到變化
- */
-function syncToParent() {
-  // 將目前 checkedValues 轉成 Array，賦值給 model
-  model.value = Array.from(checkedValues.value)
-}
-
-// ------------------- 監聽 defineModel 的變動 -------------------
-/**
- * 父層若改變 v-model 的值 (model.value)，這裡會收到通知
- *  => 我們要根據新的 model.value 重建父子聯動狀態
- */
-watch(
-  () => model.value,
-  (newVal) => {
-    checkedValues.value = new Set(newVal)
-    rebuildAllStates()
-  },
-  { immediate: true }
-)
-
-// ------------------- Checkbox 勾選 / 取消 -------------------
-function onCheckChange(e: Event, node: TreeNode) {
-  const inputEl = e.target as HTMLInputElement
-  toggleCheck(node.value, inputEl.checked)
-  syncToParent()
-}
-
-// ------------------- 滑鼠移入 => 更新 expandedPath -------------------
-function handleMouseEnter(option: TreeNode, levelIndex: number) {
-  expandedPath.value = [
-    ...expandedPath.value.slice(0, levelIndex),
-    option.value
-  ]
-}
-
-// ------------------- 建立 nodeMap / parentMap -------------------
+// 建立 nodeMap 與 parentMap：利用迭代方法（stack）遍歷樹
 onMounted(() => {
-  buildMaps(options)
-  // 初始：根據 model.value (父層給的預設選擇)，重建父子聯動
-  checkedValues.value = new Set(model.value)
-  rebuildAllStates()
+  buildMaps(cascaderOptions)
+  // 若有預設值，可在此處同步 checkedValues，這裡假設初始為空
 })
 
-// ------------------- 搜尋邏輯 -------------------
+// 搜尋功能：若 searchText 非空，則過濾出符合的節點及其祖先
 const filteredTree = computed(() => {
-  if (!searchText.value.trim()) {
-    return options
-  }
+  if (!searchText.value.trim()) return cascaderOptions
   const kw = searchText.value.trim().toLowerCase()
-
   function filterNodes(nodes: TreeNode[]): TreeNode[] {
     const res: TreeNode[] = []
     for (const node of nodes) {
@@ -175,23 +132,21 @@ const filteredTree = computed(() => {
       if (node.children && node.children.length) {
         childrenMatch = filterNodes(node.children)
       }
-      // 若自己或子孫符合 => 保留
       if (labelMatch || childrenMatch.length > 0) {
         res.push({ ...node, children: childrenMatch })
       }
     }
     return res
   }
-
-  return filterNodes(options)
+  return filterNodes(cascaderOptions)
 })
 
-// ------------------- 多欄 columns -------------------
+// 根據 expandedPath 建立每一層的欄位（columns）
+// 例如：第一欄為根節點，第二欄為根節點中被展開的子節點，以此類推
 const columns = computed(() => {
   const result: TreeNode[][] = []
   let currentLevel = filteredTree.value
   result.push(currentLevel)
-
   for (let i = 0; i < expandedPath.value.length; i++) {
     const val = expandedPath.value[i]
     const node = currentLevel.find(n => n.value === val)
@@ -204,13 +159,28 @@ const columns = computed(() => {
   }
   return result
 })
+
+// 當使用者點擊 checkbox 時觸發（利用 iterative 的 toggleCheck，內部使用 stack 遍歷子孫）
+function onCheckChange(e: Event, option: TreeNode) {
+  const isChecked = (e.target as HTMLInputElement).checked
+  toggleCheck(option.value, isChecked)
+}
+
+// 當滑鼠移入某個選項時，更新 expandedPath 以展開下一欄
+function handleMouseEnter(option: TreeNode, levelIndex: number) {
+  expandedPath.value = [
+    ...expandedPath.value.slice(0, levelIndex),
+    option.value
+  ]
+}
 </script>
 
 <style scoped>
 .multi-check-cascader {
   position: relative;
   display: inline-block;
-  width: 220px;
+  width: 240px;
+  font-family: sans-serif;
 }
 
 .cascader-selection {
@@ -230,7 +200,6 @@ const columns = computed(() => {
   border: 1px solid #ccc;
   background: #fff;
   z-index: 999;
-  width: max-content;
   padding: 8px;
 }
 
@@ -256,12 +225,26 @@ const columns = computed(() => {
   padding-right: 8px;
 }
 
+.panel-title {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
 .cascader-option {
   padding: 4px 0;
   cursor: pointer;
   white-space: nowrap;
 }
 
+.option-index {
+  display: inline-block;
+  width: 50px;
+  color: #888;
+}
+
+.option-label {
+  margin-left: 4px;
+}
 .cascader-option:hover {
   background-color: #f5f5f5;
 }

@@ -6,6 +6,14 @@
       placeholder="選擇多層項目"
     />
     <p>目前已選：{{ selectedValues }}</p>
+
+    <XMultiCheckCascaderStack
+      :options="cascaderOptions"
+      v-model="selectedValues2"
+      placeholder="選擇多層項目"
+      multiple
+    />
+    <p>目前已選：{{ selectedValues }}</p>
   </div>
 </template>
 
@@ -13,6 +21,7 @@
 import { ref } from 'vue'
 
 const selectedValues = ref([])
+const selectedValues2 = ref([])
 
 // 測試用的多層資料
 const cascaderOptions = [
