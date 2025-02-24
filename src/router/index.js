@@ -5,6 +5,7 @@ import TransactionView from '@/views/transaction.vue'
 import TableTestView from '@/views/tableTest.vue'
 import NotFoundView from '@/views/notFound.vue'
 import visNetworkView from '@/views/visNetworkView.vue'
+import test from '@/views/test.vue'
 
 
 const router = createRouter({
@@ -29,6 +30,11 @@ const router = createRouter({
       path: '/tableTest',
       name: 'tableTest',
       component: TableTestView
+    },
+    {
+      path: '/test1',
+      name: 'test1',
+      component: test
     },
     { 
       path: '/:pathMatch(.*)', 
