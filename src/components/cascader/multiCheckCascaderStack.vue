@@ -1,12 +1,12 @@
 <template>
   <div class="multi-check-cascader">
-    <!-- 顯示選擇結果，點擊可展開下拉面板 -->
+    <!-- 顯示選擇結果，點擊後展開下拉面板 -->
     <div class="cascader-selection" @click="toggleDropdown">
       <span v-if="checkedValues.size === 0">{{ placeholder }}</span>
       <span v-else>已選 {{ checkedValues.size }} 項</span>
     </div>
 
-    <!-- 下拉面板：包含搜尋框及多欄選項 -->
+    <!-- 下拉面板 -->
     <div class="cascader-dropdown" v-if="isOpen">
       <!-- 搜尋框 -->
       <div class="cascader-search">
@@ -17,8 +17,7 @@
           class="search-input"
         />
       </div>
-
-      <!-- 多欄面板：根據 expandedPath 動態產生每一層選項 -->
+      <!-- 多欄面板：根據 expandedPath 動態生成各層選項 -->
       <div class="cascader-panels">
         <div
           v-for="(levelOptions, levelIndex) in columns"
@@ -32,8 +31,8 @@
             class="cascader-option"
             @mouseenter="handleMouseEnter(option, levelIndex)"
           >
-            <div class="option-index">選項 {{ index }}</div>
-            <!-- 多選 checkbox：透過 v-indeterminate 指令設定半選狀態 -->
+            <span class="option-index">選項 {{ index }}</span>
+            <!-- 使用 v-indeterminate 指令設定半選狀態 -->
             <input
               type="checkbox"
               :checked="checkedValues.has(option.value)"
@@ -41,7 +40,7 @@
               v-indeterminate="indeterminateValues.has(option.value)"
             />
             <span class="option-label">{{ option.label }}</span>
-            <!-- 若有子節點，顯示箭頭 -->
+            <!-- 若有子節點則顯示箭頭 -->
             <span v-if="option.children && option.children.length"> &gt; </span>
           </div>
         </div>
@@ -55,6 +54,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useTreeCheckIterative, TreeNode } from '@/composables/useTreeCheckIterative'
 import { IndeterminateDirective } from '@/utils/v-indeterminate'
 
+
+
 // ------------------- directives -------------------
 /**
  * 若想在同檔案中使用自訂指令 v-indeterminate，
@@ -65,7 +66,9 @@ import { IndeterminateDirective } from '@/utils/v-indeterminate'
     indeterminate: IndeterminateDirective
   }
 })
-// 假設這裡的 options 為傳入的樹狀資料
+
+
+// 假設這裡的樹狀資料
 const cascaderOptions: TreeNode[] = [
   {
     value: 'A',
@@ -90,22 +93,15 @@ const cascaderOptions: TreeNode[] = [
   }
 ]
 
-// placeholder 文案
 const placeholder = '請選擇'
-
-// 控制下拉面板是否展開
 const isOpen = ref(false)
 function toggleDropdown() {
   isOpen.value = !isOpen.value
 }
-
-// 搜尋文字
 const searchText = ref('')
-
-// 展開路徑：用來記錄各層當前選擇，決定右側多欄的顯示
 const expandedPath = ref<(string | number)[]>([])
 
-// 使用 iterative 版本的父子聯動邏輯
+// 使用迭代版本的父子聯動邏輯
 const {
   checkedValues,
   indeterminateValues,
@@ -114,35 +110,85 @@ const {
   rebuildAllStates
 } = useTreeCheckIterative()
 
-// 建立 nodeMap 與 parentMap：利用迭代方法（stack）遍歷樹
+// 建立樹狀資料的快取（nodeMap 與 parentMap）
 onMounted(() => {
   buildMaps(cascaderOptions)
-  // 若有預設值，可在此處同步 checkedValues，這裡假設初始為空
 })
 
-// 搜尋功能：若 searchText 非空，則過濾出符合的節點及其祖先
-const filteredTree = computed(() => {
-  if (!searchText.value.trim()) return cascaderOptions
-  const kw = searchText.value.trim().toLowerCase()
-  function filterNodes(nodes: TreeNode[]): TreeNode[] {
-    const res: TreeNode[] = []
-    for (const node of nodes) {
-      const labelMatch = node.label.toLowerCase().includes(kw)
-      let childrenMatch: TreeNode[] = []
+/**
+ * iterativeFilterTree
+ * 以迭代方式過濾樹狀資料，不使用遞迴。
+ * 透過堆疊進行後序遍歷，並在每個節點處理完畢後，
+ * 決定該節點是否符合搜尋條件（或其子孫中有符合者），
+ * 最後組合成新的過濾後樹狀結構。
+ * 
+ * @param nodes 原始樹狀資料陣列
+ * @param keyword 搜尋關鍵字（不區分大小寫）
+ * @returns 過濾後的樹狀資料陣列
+ */
+ function iterativeFilterTree(nodes: TreeNode[], keyword: string): TreeNode[] {
+  const kw = keyword.toLowerCase()
+  // resultMap 用來儲存每個節點過濾後的結果（若不符合則為 null）
+  const resultMap = new Map<string | number, TreeNode | null>()
+  // 使用堆疊來模擬後序遍歷，每個元素包含 node 與 visited 標記
+  const stack: { node: TreeNode; visited: boolean }[] = []
+  for (const node of nodes) {
+    stack.push({ node, visited: false })
+  }
+  
+  while (stack.length) {
+    const { node, visited } = stack.pop()!
+    if (!visited) {
+      // 第一次遇到此節點，先將它推回堆疊並標記為已訪問，然後將其子節點推入
+      stack.push({ node, visited: true })
       if (node.children && node.children.length) {
-        childrenMatch = filterNodes(node.children)
+        // 注意：為了保持原始順序，從後往前推入
+        for (let i = node.children.length - 1; i >= 0; i--) {
+          stack.push({ node: node.children[i], visited: false })
+        }
       }
-      if (labelMatch || childrenMatch.length > 0) {
-        res.push({ ...node, children: childrenMatch })
+    } else {
+      // 此時所有子節點均已處理完畢
+      let filteredChildren: TreeNode[] = []
+      if (node.children && node.children.length) {
+        for (const child of node.children) {
+          const filteredChild = resultMap.get(child.value)
+          if (filteredChild) {
+            filteredChildren.push(filteredChild)
+          }
+        }
+      }
+      // 判斷該節點自身是否符合搜尋條件
+      const nodeMatches = node.label.toLowerCase().includes(kw)
+      if (nodeMatches || filteredChildren.length > 0) {
+        // 若符合或子孫有符合，則保留此節點
+        const newNode: TreeNode = { ...node, children: filteredChildren }
+        resultMap.set(node.value, newNode)
+      } else {
+        // 不符合則記為 null
+        resultMap.set(node.value, null)
       }
     }
-    return res
   }
-  return filterNodes(cascaderOptions)
+  
+  // 組合根節點的結果
+  const filteredRoots: TreeNode[] = []
+  for (const node of nodes) {
+    const filteredNode = resultMap.get(node.value)
+    if (filteredNode) {
+      filteredRoots.push(filteredNode)
+    }
+  }
+  return filteredRoots
+}
+
+// 計算過濾後的樹狀資料，若無搜尋則直接使用原始資料
+const filteredTree = computed(() => {
+  if (!searchText.value.trim()) return cascaderOptions
+  return iterativeFilterTree(cascaderOptions, searchText.value.trim())
 })
 
-// 根據 expandedPath 建立每一層的欄位（columns）
-// 例如：第一欄為根節點，第二欄為根節點中被展開的子節點，以此類推
+// 根據 expandedPath 計算各層面板資料
 const columns = computed(() => {
   const result: TreeNode[][] = []
   let currentLevel = filteredTree.value
@@ -160,13 +206,13 @@ const columns = computed(() => {
   return result
 })
 
-// 當使用者點擊 checkbox 時觸發（利用 iterative 的 toggleCheck，內部使用 stack 遍歷子孫）
+// 當使用者點擊 checkbox 時觸發
 function onCheckChange(e: Event, option: TreeNode) {
   const isChecked = (e.target as HTMLInputElement).checked
   toggleCheck(option.value, isChecked)
 }
 
-// 當滑鼠移入某個選項時，更新 expandedPath 以展開下一欄
+// 當滑鼠移入某一選項時更新 expandedPath 以展開下一層面板
 function handleMouseEnter(option: TreeNode, levelIndex: number) {
   expandedPath.value = [
     ...expandedPath.value.slice(0, levelIndex),
@@ -245,6 +291,7 @@ function handleMouseEnter(option: TreeNode, levelIndex: number) {
 .option-label {
   margin-left: 4px;
 }
+
 .cascader-option:hover {
   background-color: #f5f5f5;
 }

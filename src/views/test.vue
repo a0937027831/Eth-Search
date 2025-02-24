@@ -1,11 +1,11 @@
 <template>
   <div>
-    <XMultiCheckCascader
+    <!-- <XMultiCheckCascader
       :options="cascaderOptions"
       v-model="selectedValues"
       placeholder="選擇多層項目"
     />
-    <p>目前已選：{{ selectedValues }}</p>
+    <p>目前已選：{{ selectedValues }}</p> -->
 
     <XMultiCheckCascaderStack
       :options="cascaderOptions"
