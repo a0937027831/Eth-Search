@@ -23,6 +23,8 @@ const items = [
   { title: 'account', to: '/account' },
   { title: 'transaction', to: '/transaction' },
   { title: 'test', to: '/test1' },
+  { title: 'test2', to: '/test2' },
+  { title: 'test3', to: '/test3' },
   { title: 'visNetworkView', to: '/visNetworkView'},
 ]
 
