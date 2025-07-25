@@ -1,19 +1,24 @@
 <template>
   <h1>hello</h1>
   <!-- <v-btn @click="addNote">add note</v-btn> -->
-  <v-btn @click="addNode">add node</v-btn>
+  <v-btn @click="addBigData">add node</v-btn>
+  <v-btn @click="addNormalNode" color="green">新增一般節點</v-btn>
+  <v-btn @click="addSpecialNode" color="red">新增特殊節點</v-btn>
+  <v-btn @click="togglePhysics">{{ physicsEnabled ? '停止物理模擬' : '啟動物理模擬' }}</v-btn>
+  <v-btn @click="stabilizeNetwork">手動穩定網絡</v-btn>
   <div class="network-wrapper" ref="visContainerDom"></div>
 </template>
 <script setup>
 import { Network } from 'vis-network';
 import { DataSet } from 'vis-data';
 import { onMounted, ref } from "vue";
-import { createNodesList } from '@/mockedata/visTest'
+import { createNodesList, createNormalNode, createSpecialNode } from '@/mockedata/visTest'
 import * as _ from 'lodash'
 
 
 const visContainerDom = ref(null);
 var network = null;
+const physicsEnabled = ref(true);
 
 const datas = {
   nodes: new DataSet(),
@@ -23,6 +28,7 @@ const datas = {
 
 
 const id = ref(0)
+const draggedNodeId = ref(null) // 記錄正在拖曳的節點ID
 
 
 
@@ -111,7 +117,37 @@ const networkOptions = _.merge(defaultNetworkOptions, {
       })
   },
   physics: {
-      enabled: false
+      enabled: true,
+      solver: 'barnesHut',
+      barnesHut: {
+          theta: 0.5,
+          gravitationalConstant: -5000,
+          centralGravity: 0.1,
+          springLength: 150,
+          springConstant: 1,
+          damping: 0.5,
+          avoidOverlap: 0.5
+      },
+      forceAtlas2Based: {
+          theta: 0.5,
+          gravitationalConstant: -100,
+          centralGravity: 0.005,
+          springConstant: 0.05,
+          springLength: 150,
+          damping: 0.5,
+          avoidOverlap: 0.8
+      },
+      maxVelocity: 150,
+      minVelocity: 0.5,
+      timestep: 0.1,
+      adaptiveTimestep: true,
+      stabilization: {
+          enabled: true,
+          iterations: 3000,
+          updateInterval: 100,
+          onlyDynamicEdges: false,
+          fit: true
+      }
   },
 })
 
@@ -203,9 +239,131 @@ function addEdge(){
   // datas.edges.add({from:'1',to:'2'})
 }
 
+function togglePhysics() {
+  physicsEnabled.value = !physicsEnabled.value;
+  if (physicsEnabled.value) {
+    network.startSimulation();
+    console.log("物理模擬已啟動");
+  } else {
+    network.stopSimulation();
+    console.log("物理模擬已停止");
+  }
+}
+
+function stabilizeNetwork() {
+  console.log("手動穩定網絡中...");
+  network.stabilize(1000); // 執行1000次迭代
+}
+
+// 新增一般節點（固定）
+function addNormalNode() {
+  id.value += 1;
+  const newNode = createNormalNode(id.value);
+  datas.nodes.add(newNode);
+  
+  // 如果有其他節點，創建連接
+  const allNodes = datas.nodes.get();
+  if (allNodes.length > 1) {
+    // 連接到最近創建的節點
+    const previousNode = allNodes[allNodes.length - 2];
+    datas.edges.add({
+      from: previousNode.id,
+      to: newNode.id,
+      arrows: { to: true }
+    });
+  }
+  
+  network.setOptions({ layout: { hierarchical: false } });
+  console.log("新增一般節點:", newNode.id);
+}
+
+// 新增特殊節點（不固定）
+function addSpecialNode() {
+  id.value += 1;
+  const newNode = createSpecialNode(id.value);
+  datas.nodes.add(newNode);
+  
+  // 如果有其他節點，創建連接
+  const allNodes = datas.nodes.get();
+  if (allNodes.length > 1) {
+    // 連接到最近創建的節點
+    const previousNode = allNodes[allNodes.length - 2];
+    datas.edges.add({
+      from: previousNode.id,
+      to: newNode.id,
+      arrows: { to: true }
+    });
+  }
+  
+  network.setOptions({ layout: { hierarchical: false } });
+  console.log("新增特殊節點:", newNode.id);
+}
+
 function initVisNetwork(){
   network = new Network(visContainerDom.value, datas, networkOptions);
   console.log('network',network)
+  
+  // 監聽穩定化事件
+  network.on("startStabilizing", function () {
+    console.log("開始穩定化...");
+  });
+  
+  network.on("stabilizationProgress", function (params) {
+    console.log("穩定化進度:", params.iterations + "/" + params.total);
+  });
+  
+  network.on("stabilizationIterationsDone", function () {
+    console.log("穩定化迭代完成");
+  });
+  
+  network.on("stabilized", function (params) {
+    console.log("網絡已穩定！迭代次數:", params.iterations);
+  });
+  
+  // 拖曳開始事件
+  network.on("dragStart", function (params) {
+    if (params.nodes.length > 0) {
+      const nodeId = params.nodes[0];
+      const node = datas.nodes.get(nodeId);
+      
+      // 只處理一般節點（nodeType === 'normal'）
+      if (node && node.nodeType === 'normal') {
+        draggedNodeId.value = nodeId;
+        // 暫時解除固定
+        datas.nodes.update({
+          id: nodeId,
+          fixed: false
+        });
+        console.log(`開始拖曳一般節點 ${nodeId}，暫時解除固定`);
+      }
+    }
+  });
+  
+  // 拖曳結束事件
+  network.on("dragEnd", function (params) {
+    if (draggedNodeId.value) {
+      const nodeId = draggedNodeId.value;
+      const node = datas.nodes.get(nodeId);
+      
+      // 只處理一般節點
+      if (node && node.nodeType === 'normal') {
+        // 獲取當前位置
+        const positions = network.getPositions([nodeId]);
+        const position = positions[nodeId];
+        
+        // 恢復固定狀態並更新位置
+        datas.nodes.update({
+          id: nodeId,
+          fixed: true,
+          x: position.x,
+          y: position.y
+        });
+        console.log(`結束拖曳一般節點 ${nodeId}，恢復固定在位置 (${position.x}, ${position.y})`);
+      }
+      
+      draggedNodeId.value = null;
+    }
+  });
 }
 
 

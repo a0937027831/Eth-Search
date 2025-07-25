@@ -4,11 +4,9 @@
       <slot name="top"></slot>
     </div>
 
-    <div ref="tableBlock" class="table-block">
+    <div ref="tableBlock" class="table-block" :id="teleportId">
       <!-- 傳遞 tableBlock 與 teleportId 給子組件 -->
       <slot name="table" :tableBlock="tableBlock" :teleportId="teleportId"></slot>
-      <!-- 使用動態產生的 teleportId -->
-      <div :id="teleportId" class="teleport-container"></div>
     </div>
 
     <div class="pagination-block">

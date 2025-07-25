@@ -22,12 +22,12 @@
     <template #loading>
       {{ teleportReady }}
       <Teleport v-if="teleportReady" :to="computedTeleportTarget">
-        <div v-if="loading" class="loading-container">
+        <div  class="loading-container">
           <XLoadingCircle :size="loadingSize" :text="loadingText" />
         </div>
       </Teleport>
       <div v-else>
-        <div v-if="loading" class="loading-container">
+        <div class="loading-container">
           <XLoadingCircle :size="loadingSize" :text="loadingText" />
         </div>
       </div>

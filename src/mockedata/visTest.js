@@ -1,10 +1,14 @@
 
 function getNodes (id){
+  // 每三個節點有一個是特殊節點（不固定）
+  const isSpecialNode = id % 3 === 1;
+  
   return {
     id: id.toString(),
-    lable:'node'+ id.toString(),
+    label: isSpecialNode ? `特殊節點${id}` : `一般節點${id}`,
     tooltip: '123145679',
-    type: 'test',
+    type: isSpecialNode ? 'special' : 'normal',
+    nodeType: isSpecialNode ? 'special' : 'normal', // 用於識別節點類型
     x: null,
     y: null,
     margin: {
@@ -12,8 +16,9 @@ function getNodes (id){
     },
     color: {
       border: "transparent",
-      background: "#58d196",
+      background: isSpecialNode ? "#ff6b6b" : "#58d196", // 特殊節點紅色，一般節點綠色
     },
+    shape: isSpecialNode ? 'diamond' : 'dot', // 特殊節點菱形，一般節點圓形
     shapeProperties: {
       useBorderWithImage: true,
     },
@@ -37,6 +42,8 @@ function getNodes (id){
       is_comment: false,
       blockchain: '',
     },
+    fixed: !isSpecialNode, // 一般節點固定，特殊節點不固定
+    mass: isSpecialNode ? 1 : 1.5, // 一般節點質量稍大
   }
 }
 
@@ -80,12 +87,68 @@ function getEdge(id){
 
 }
 
+// 創建一般節點（固定）
+export function createNormalNode(id, position = {}) {
+  return {
+    id: id.toString(),
+    label: `一般節點${id}`,
+    nodeType: 'normal',
+    shape: 'dot',
+    size: 25,
+    color: {
+      border: "#2B7CE9",
+      background: "#58d196",
+      highlight: {
+        border: "#2B7CE9",
+        background: "#7BE0AD"
+      }
+    },
+    fixed: true, // 默認固定
+    physics: true,
+    font: {
+      color: '#ffffff',
+      size: 14,
+      face: 'arial'
+    },
+    borderWidth: 2,
+    ...position // 如果提供了位置
+  };
+}
+
+// 創建特殊節點（不固定）
+export function createSpecialNode(id, position = {}) {
+  return {
+    id: id.toString(),
+    label: `特殊節點${id}`,
+    nodeType: 'special',
+    shape: 'diamond',
+    size: 30,
+    color: {
+      border: "#C62828",
+      background: "#ff6b6b",
+      highlight: {
+        border: "#C62828",
+        background: "#ff9999"
+      }
+    },
+    fixed: false, // 永遠不固定
+    physics: true,
+    font: {
+      color: '#ffffff',
+      size: 14,
+      face: 'arial'
+    },
+    borderWidth: 2,
+    ...position // 如果提供了位置
+  };
+}
+
 export function createNodesList(){
   let list = {
     nodes: [],
     edges: [], 
   };
-  for(let i = 0 ;  i< 1000 ; i++){
+  for(let i = 0 ;  i< 11 ; i++){
     list.nodes.push(getNodes(i))
     if(i != 0){
       list.edges.push(getEdge(i))
