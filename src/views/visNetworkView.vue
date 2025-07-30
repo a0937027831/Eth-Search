@@ -307,8 +307,58 @@ function closeLayoutSort() {
  * 切換層級排序
  */
 function toggleHierarchical() {
-   useLayoutSort();
-  closeLayoutSort();
+  // 1. 解除所有節點的固定狀態
+  const allNodes = datas.nodes.get();
+  let updatedNodes = [];
+  allNodes.forEach(node => {
+    if (node.fixed) {
+      updatedNodes.push({ id: node.id, fixed: false });
+      console.log(`解除節點 ${node.id} 的固定狀態`);
+    }
+  });
+  datas.nodes.update(updatedNodes);
+
+  // 2. 開啟層級排序
+  network.setOptions({ 
+    layout: { 
+      hierarchical: {
+        enabled: true,
+        levelSeparation: default_level_separation,
+        nodeSpacing: default_node_spacing * node_spacing_step,
+        direction: 'LR',
+        sortMethod: 'directed',
+      }
+    }
+  });
+
+  // 3. 等待排序完成後，關閉層級排序並儲存位置
+  network.once('stabilized', () => {
+    // 儲存當前位置
+    network.storePositions();
+    
+    // 關閉層級排序，恢復正常物理引擎
+    network.setOptions({ 
+      layout: { 
+        hierarchical: false 
+      }
+    });
+    
+    // 恢復一般節點的固定狀態
+    const normalNodes = datas.nodes.get({ filter: node => node.nodeType === 'normal' });
+    let fixedNodes = [];
+    normalNodes.forEach(node => {
+      const positions = network.getPositions([node.id]);
+      const position = positions[node.id];
+      fixedNodes.push({ 
+        id: node.id, 
+        fixed: true,
+        x: position.x,
+        y: position.y
+      });
+    });
+    datas.nodes.update(fixedNodes);
+    console.log("層級排序完成，節點位置已儲存");
+  });
 }
 
 // 新增一般節點（固定）
