@@ -6,6 +6,7 @@
   <v-btn @click="addSpecialNode" color="red">新增特殊節點</v-btn>
   <v-btn @click="togglePhysics">{{ physicsEnabled ? '停止物理模擬' : '啟動物理模擬' }}</v-btn>
   <v-btn @click="stabilizeNetwork">手動穩定網絡</v-btn>
+  <v-btn @click="toggleHierarchical" color="blue">層級排序</v-btn>
   <div class="network-wrapper" ref="visContainerDom"></div>
 </template>
 <script setup>
@@ -29,6 +30,12 @@ const datas = {
 
 const id = ref(0)
 const draggedNodeId = ref(null) // 記錄正在拖曳的節點ID
+const hierarchicalEnabled = ref(false) // 記錄層級排序狀態
+
+// 預設層級排序參數
+const default_level_separation = 300
+const default_node_spacing = 150
+const node_spacing_step = 1
 
 
 
@@ -253,6 +260,55 @@ function togglePhysics() {
 function stabilizeNetwork() {
   console.log("手動穩定網絡中...");
   network.stabilize(1000); // 執行1000次迭代
+}
+
+/**
+ * 開啟層級排序
+ */
+function useLayoutSort() {
+  // 根據文檔，當使用階層佈局時，物理引擎會自動使用 hierarchicalRepulsion
+  network.setOptions({ 
+    layout: { 
+      hierarchical: {
+        enabled: true,
+        levelSeparation: default_level_separation,
+        nodeSpacing: default_node_spacing * node_spacing_step,
+        blockShifting: false,
+        edgeMinimization: false,
+        direction: 'LR',
+        sortMethod: 'directed',
+      }
+    }
+    // 不需要手動設定 physics，vis-network 會自動處理
+  });
+  
+  // 儲存節點位置
+  setTimeout(() => {
+    network.storePositions();
+    console.log("層級排序已開啟，物理引擎自動切換為 hierarchicalRepulsion");
+  }, 500);
+}
+
+/**
+ * 關閉層級排序
+ */
+function closeLayoutSort() {
+  // 關閉階層佈局，物理引擎會自動恢復原設定
+  network.setOptions({ 
+    layout: { 
+      hierarchical: false 
+    }
+  });
+  
+  console.log("層級排序已關閉，物理引擎恢復原設定");
+}
+
+/**
+ * 切換層級排序
+ */
+function toggleHierarchical() {
+   useLayoutSort();
+  closeLayoutSort();
 }
 
 // 新增一般節點（固定）
